@@ -1,0 +1,57 @@
+# Despliegue en Render (render.com): un solo servicio sirve la app y el webhook de WhatsApp.
+services:
+  - type: web
+    name: kallpa
+    runtime: python
+    plan: free
+    buildCommand: |
+      cd frontend && npm install && npm run build && cd ../backend && pip install -r requirements-server.txt
+    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL          # PostgreSQL: los datos NO se borran al reiniciar
+        fromDatabase:
+          name: kallpa-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: SEED_DEMO
+        value: "true"
+      - key: WHATSAPP_ENABLED
+        value: "true"
+      - key: WHATSAPP_PROVIDER
+        value: twilio
+      - key: BRIDGE_SECRET
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_JOIN_CODE
+        sync: false
+      - key: TWILIO_WHATSAPP_FROM
+        value: "+14155238886"
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_APP_SECRET
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        sync: false
+      - key: WHATSAPP_DISPLAY_NUMBER
+        sync: false
+      - key: APP_BASE_URL
+        sync: false
+      - key: AGENT_ENABLED
+        value: "false"
+      - key: GEMINI_API_KEY
+        sync: false
+
+databases:
+  - name: kallpa-db
+    plan: free
+    databaseName: kallpa
+    user: kallpa
